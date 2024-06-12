@@ -1,5 +1,10 @@
-import { useEffect, useRef } from "react";
 import * as Three from "three";
+import { useEffect, useRef } from "react";
+import { OrbitControls } from "three/examples/jsm/Addons.js";
+
+import getEarth from "../lib/earth";
+import getClouds from "../lib/clouds";
+import getLights from "../lib/lights";
 
 export default function EarthScene() {
   const refContainer = useRef<HTMLDivElement>(null);
@@ -14,22 +19,51 @@ export default function EarthScene() {
       0.1,
       2000
     );
-    camera.position.z = 5;
+    camera.position.z = 2;
 
     const renderer = new Three.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    container && container.appendChild(renderer.domElement);
 
-    const geometry = new Three.BoxGeometry();
-    const material = new Three.MeshBasicMaterial();
-    const cube = new Three.Mesh(geometry, material);
-    scene.add(cube);
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.minDistance = 2;
+    controls.maxDistance = 5;
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+
+    if (container) {
+      container.innerHTML = "";
+      container.appendChild(renderer.domElement);
+    }
+
+    const earthGroup = new Three.Group();
+    scene.add(earthGroup);
+
+    const detail = 16;
+
+    const earthMesh = getEarth(detail);
+    earthGroup.add(earthMesh);
+
+    const cloudsMesh = getClouds(detail);
+    earthGroup.add(cloudsMesh);
+
+    const lightsMesh = getLights(detail);
+    earthGroup.add(lightsMesh);
+
+    const sunLight = new Three.DirectionalLight(0xffffff, 0.5);
+    sunLight.position.set(1, 1, 0);
+    scene.add(sunLight);
+
+    const ambientLight = new Three.AmbientLight(0xffffff, 0.01);
+    scene.add(ambientLight);
 
     const animate = () => {
       requestAnimationFrame(animate);
 
-      cube.rotation.x += 0.01;
-      cube.rotation.y += 0.01;
+      earthMesh.rotation.y += 0.001;
+      lightsMesh.rotation.y += 0.001;
+      cloudsMesh.rotation.y += 0.002;
+
+      controls.update();
 
       renderer.render(scene, camera);
     };
