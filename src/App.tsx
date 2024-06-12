@@ -1,5 +1,7 @@
+import EarthScene from "./components/EarthScene";
+
 function App() {
-  return <main>Hello World!</main>;
+  return <EarthScene />;
 }
 
 export default App;
