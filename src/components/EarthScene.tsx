@@ -5,6 +5,7 @@ import { OrbitControls } from "three/examples/jsm/Addons.js";
 import getEarth from "../lib/earth";
 import getClouds from "../lib/clouds";
 import getLights from "../lib/lights";
+import getMoon from "../lib/moon";
 
 export default function EarthScene() {
   const refContainer = useRef<HTMLDivElement>(null);
@@ -49,6 +50,11 @@ export default function EarthScene() {
     const lightsMesh = getLights(detail);
     earthGroup.add(lightsMesh);
 
+    const moonMesh = getMoon(detail);
+    earthGroup.add(moonMesh);
+    moonMesh.position.z = -4;
+    moonMesh.scale.set(0.25, 0.25, 0.25);
+
     const sunLight = new Three.DirectionalLight(0xffffff, 0.5);
     sunLight.position.set(1, 1, 0);
     scene.add(sunLight);
@@ -56,12 +62,16 @@ export default function EarthScene() {
     const ambientLight = new Three.AmbientLight(0xffffff, 0.01);
     scene.add(ambientLight);
 
-    const animate = () => {
+    const animate = (t = 0) => {
       requestAnimationFrame(animate);
 
       earthMesh.rotation.y += 0.001;
       lightsMesh.rotation.y += 0.001;
       cloudsMesh.rotation.y += 0.002;
+
+      moonMesh.position.x = Math.sin(t * 0.001) * 2;
+      moonMesh.position.z = Math.cos(t * 0.001) * 2;
+      moonMesh.position.y = Math.cos(t * 0.001) * 2;
 
       controls.update();
 
